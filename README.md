@@ -22,6 +22,7 @@ Capstone projecct
   ![MicrosoftTeams-image](https://user-images.githubusercontent.com/9460937/137208913-7bc6655b-b505-4201-886f-9990f837b0f9.png)
 3. Install all the suitable libraries for R and R studio. Sometimes there is warning shown on the top of R studio.
 4. Run all cells as shown below:
-  ![MicrosoftTeams-image](https://user-images.githubusercontent.com/9460937/137209238-b065a571-a96a-4577-85e5-f1c1898f7e60.png)
+  ![image](https://user-images.githubusercontent.com/9460937/137209382-c79db713-3999-4377-abab-c31ce8b6306d.png)
+
 
 
