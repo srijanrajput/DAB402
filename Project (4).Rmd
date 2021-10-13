@@ -1,0 +1,406 @@
+
+## load the data
+
+```{r}
+
+mrkting_data <- read.csv("/Users/jagmitmaan/Documents/R/marketing_campaign.csv")
+
+```
+
+## View Marketing Campaign data
+
+```{r}
+#View(mrkting_data)
+```
+
+## describes head row of Marketing Campaign data
+
+```{r}
+head(mrkting_data)
+```
+## dimensions
+
+```{r}
+dim(mrkting_data)
+```
+## defining structure of data
+
+```{r}
+str(mrkting_data)
+```
+## checking na and null values
+
+```{r}
+sum(is.na(mrkting_data))
+sum(is.null(mrkting_data))
+```
+## Data Dictionary
+
+```{r}
+library(dataMeta)
+colnames(mrkting_data)
+```
+
+```{r}
+var_desc <- c("Customer's unique identifier", 
+              "Customer's birth year", 
+             "Customer's education level", 
+             "Customer's marital status",
+             "Customer's yearly household income",
+             "Number of children in customer's household",
+             "Number of teenagers in customer's household",
+             "Date of customer's enrollment with the company", 
+             "Number of days since customer's last purchase",
+             "Amount spent on wine in last 2 years",
+             "Amount spent on fruits in last 2 years",
+             "Amount spent on meat in last 2 years",
+             "Amount spent on fish in last 2 years",
+             "Amount spent on sweets in last 2 years",
+             "Amount spent on gold in last 2 years",
+             "Number of purchases made with a discount",
+             "Number of Online purchases",
+             "Number of Purchases made using Flyers",
+             "Number of On-Store purchases",
+             "Number of Website Visits",
+             "1 if customer accepted the offer in the 3rd campaign, 0 otherwise",
+             "1 if customer accepted the offer in the 4th campaign, 0 otherwise",
+             "1 if customer accepted the offer in the 5th campaign, 0 otherwise",
+             "1 if customer accepted the offer in the 1st campaign, 0 otherwise",
+             "1 if customer accepted the offer in the 2nd campaign, 0 otherwise",
+             "if customer complained it's 1 else 0",
+             "1 if customer accepted the offer in the last campaign, 0 otherwise")
+
+var_type <- c(0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1)
+
+```
+
+## install.packages("dataMeta") if package is not installed
+
+```{r}
+
+linker <- build_linker(mrkting_data, variable_description = var_desc, variable_type = var_type)
+#build_linker
+dict <- build_dict(my.data = mrkting_data, linker = linker, option_description = NULL, prompt_varopts = FALSE)
+
+```
+
+
+```{r}
+library(knitr)
+kable(dict, format = "html", caption = "Data dictionary for original dataset")
+
+```
+
+
+## Extracting stat and saving in data frame for all the Attributes in the Marketing data
+
+```{r}
+
+ summary_df <- data.frame('Column' = NA, 'NAs'= NA,'NULL_Values'= NA,'Unique'= NA,'Data_Type'= NA,'Mean'= NA,'Mode'= NA,'Std'= NA,'Min'= NA,'25%'= NA,'Median'= NA,'75%'= NA,'Max'= NA)[0,]
+ names <- names(mrkting_data)
+ 
+ 
+ mod_num <- function(x){
+  y <- as.factor(x)
+  freq <- summary(y)
+  mode <- names(freq)[freq[names(freq)] == max(freq)]
+  as.numeric(mode)
+ }
+ 
+for(i in 1:ncol(mrkting_data)) {# for-loop over columns
+  var_col_name <- names[i]
+  var_sum_na <- sum(is.na(mrkting_data[ , i])) 
+  var_sum_null <- sum(is.null(mrkting_data[ , i])) 
+  var_sum_unique <- sum(length(unique(mrkting_data[ , i])))
+  var_typeof <- typeof(mrkting_data[ , i])
+  var_mean <- ifelse(is.numeric(mrkting_data[,i]),mean(mrkting_data[,i],na.rm = TRUE), NA)
+  var_mode <- ifelse(is.numeric(mrkting_data[,i]),mod_num(mrkting_data[,i]), NA)
+  
+  var_sd <- ifelse(is.numeric(mrkting_data[,i]),sd(mrkting_data[,i],na.rm = TRUE), NA)
+  var_min <- ifelse(is.numeric(mrkting_data[,i]),min(mrkting_data[,i],na.rm = TRUE), NA)
+  var_quantile <- ifelse(is.numeric(mrkting_data[,i]),quantile(mrkting_data[,i],.25, na.rm = TRUE),NA)
+  var_quantile <- ifelse(is.numeric(mrkting_data[,i]),quantile(mrkting_data[,i],.50, na.rm = TRUE),NA)
+  var_quantile <- ifelse(is.numeric(mrkting_data[,i]),quantile(mrkting_data[,i],.75, na.rm = TRUE),NA)
+  var_max <- ifelse(is.numeric(mrkting_data[,i]),max(mrkting_data[,i],na.rm = TRUE), NA)
+
+    summary_df[nrow(summary_df) +1,] <- c(var_col_name, var_sum_na,var_sum_null,var_sum_unique,var_typeof,var_mean,var_mode,var_sd,var_min,var_quantile,var_quantile,var_quantile,var_max)
+}
+ 
+```
+
+
+```{r}
+View(summary_df)
+```
+
+## Box plot and Histogram
+
+```{r}
+names <- names(mrkting_data)
+
+for(i in 1:ncol(mrkting_data)) {       # for-loop over columns
+if(is.numeric(mrkting_data[,i]))
+{
+ par(mfrow = c(1, 2))
+  boxplot(mrkting_data[,i],ylab=names[i],col=i+1)
+  hist(mrkting_data[,i],xlab=names[i],main = paste("Histogram for ",names[i]),col=heat.colors(20))
+}
+}
+
+```
+## frequency table
+
+```{r}
+fact <- c(3,4,8)
+#num <- c(1,6,10,12:15)
+
+for (i in fact)
+{
+ #print(names(mrkting_data)[i])
+ var12<-round(prop.table(table(mrkting_data[,i]))*100,1)
+ #print(var12)
+ par(mar=c(5,3,3,2))
+ barplot(table(mrkting_data[,i]),main= paste("Distribution of",names(mrkting_data)[i]),col = heat.colors(20),las=2,density = 40)
+}
+
+```
+
+
+```{r}
+## Correlation Plot
+library(lares)
+corr_cross(mrkting_data, 
+  max_pvalue = 0.05,
+  top = 15
+)
+
+corr_var(mrkting_data, 
+  Response,
+  top = 15
+)
+```
+
+
+
+```{r}
+# plot scatterplot
+x <- unlist(lapply(mrkting_data, is.numeric)) 
+data_subset <- mrkting_data[,x]
+data_subset
+
+```
+
+
+```{r}
+## Cleaning NA using KNN
+library(VIM)
+
+sum(is.na(mrkting_data))
+
+mrkting_data_clean <- kNN(mrkting_data, k=7)[,1:27]
+
+sum(is.na(mrkting_data_clean))
+
+```
+
+
+```{r}
+## Standardizing data 
+library(caret)
+
+#summary(mrkting_data_clean[,c(-3,-4,-8)])
+preprocessing <- preProcess(mrkting_data_clean[,c(-3,-4,-8)], method = c("center","scale" ))
+
+standardized_data <- predict(preprocessing, mrkting_data_clean[,c(-3,-4,-8)]) # Data is scaled around zero mean and 1 variance.
+
+summary(standardized_data)
+
+```
+
+
+```{r}
+## Normalizing data
+preprocessing <- preProcess(mrkting_data_clean[,c(-3,-4,-8)], method = c("range" ))
+
+normalized_data <- predict(preprocessing, mrkting_data_clean[,c(-3,-4,-8)]) # Data is scaled b/w 0 to 1.
+
+summary(normalized_data)
+
+```
+
+
+```{r}
+## Splitting Test -Train data
+set.seed(123)
+
+train_ind <- sample(seq_len(nrow(normalized_data)), size= .7* nrow(normalized_data))
+
+train.data <- normalized_data[train_ind,]
+test.data <- normalized_data[-train_ind,]
+
+```
+
+```{r}
+## Applying KNN Model
+
+library(class)
+library(ggplot2)
+
+indep.train.data <- train.data[-24]
+indep.test.data <- test.data[-24]
+
+target.train.variable <- train.data$Response
+target.test.variable <- test.data$Response
+accuracy <- c()
+error <- c()
+
+
+for (col in 1:sqrt(nrow(normalized_data))){
+      
+  pred.target.test.variable <- knn(indep.train.data,indep.test.data, target.train.variable, k=col)
+   cm <- as.matrix(table(Actual = target.test.variable, Predicted = pred.target.test.variable))
+   accuracy[col] <- sum(diag(cm))/length(target.test.variable) * 100
+   error[col] <- 100-accuracy[col]
+}
+
+plot_data <- data.frame(accuracy, c(1:sqrt(nrow(normalized_data))), error)
+names(plot_data)[2] <- "Range"
+
+```
+
+
+```{r}
+## Plot accuracy vs K value
+ggplot(plot_data,aes(x=Range, y=accuracy)) +
+    geom_line() +
+    geom_point()
+```
+
+```{r}
+## Plot Error vs K value
+ggplot(plot_data,aes(x=Range, y=error)) +
+    geom_line() +
+    geom_point()
+```
+
+```{r}
+## Optimized K value has appeared to be 7. 
+```
+
+```{r}
+## Logistic Regression Model
+
+### Splitting Train-Test Data
+train_ind <- sample(seq_len(nrow(normalized_data)), size= .7* nrow(normalized_data))
+
+train.data <- normalized_data[train_ind,]
+test.data <- normalized_data[-train_ind,]
+```
+
+
+```{r}
+## Implementing Logistic Model
+
+logModel <- glm(Response ~., family = "binomial", data = train.data)
+summary(logModel)
+
+```
+
+```{r}
+## Making predictions for Logistic Model
+
+pred.target.test.variable <- predict(logModel,test.data, type = "response")
+confusionMatrix <- as.matrix(table(Actual = test.data$Response, Predicted = pred.target.test.variable > 0.2))
+confusionMatrix ## At Threshold Value of 0.5
+accuracy <- sum(diag(cm))/length(target.test.variable) * 100
+paste("Accuracy of Logisitic classification Model here is ", round(accuracy, digits = 3),"%.")
+
+## False positive response is quite high here. We can try to minimize it by optimizing the Threshold value.
+```
+
+```{r}
+## Optimizing the Threshold Value Logistic Regression Model
+library(ROCR)
+pred.target.test.variable <- predict(logModel,train.data, type = "response")
+
+pred.ROCR <- prediction(pred.target.test.variable, train.data$Response)
+perf.ROCR <- performance(pred.ROCR, "tpr", "fpr")
+
+## Plot ROC curve
+
+plot(perf.ROCR, colorize= TRUE, print.cutoffs.at= seq(0.1, by=0.1))
+
+
+```
+```{r}
+## Decision Trees 
+
+library(rpart,quietly = TRUE)
+library(caret,quietly = TRUE)
+library(rpart.plot,quietly = TRUE)
+
+
+### Splitting Train-Test Data
+train_ind <- sample(seq_len(nrow(normalized_data)), size= .7* nrow(normalized_data))
+
+train.data <- normalized_data[train_ind,]
+test.data <- normalized_data[-train_ind,]
+
+## Designing Decision Tree 
+
+response.tree <- rpart(Response~., data=train.data, method = "class")
+rpart.plot(tree, nn=TRUE, extra = 1)
+predict(response.tree,test.data)
+
+## Confusion Matrix
+
+conf_Mat <- table(predict(response.tree, type="class"), train.data$Response)
+conf_Mat
+
+## Misclassification error for Training data
+Misclas_Error <- 1- sum(diag(conf_Mat))/sum(conf_Mat)
+Misclas_Error
+
+## Misclassification error for Test data
+response.tree <- rpart(Response~., data=test.data, method = "class")
+conf_Mat <- table(predict(response.tree, type="class"), test.data$Response)
+Misclas_Error <- 1- sum(diag(conf_Mat))/sum(conf_Mat)
+Misclas_Error
+
+
+```
+
+
+```{r}
+library(party)
+response.tree <- ctree(Response~., data = train.data, controls = ctree_control(mincriterion = .95, minsplit = 250))
+plot(response.tree, nn=TRUE)
+
+## Prediction
+#predict(response.tree,test.data, type="prob")
+```
+
+```{r}
+## Making Predictions using Decision Tree
+
+decision.tree.prediction <- predict(object=tree,test.data[-24],type="class")
+confusionMatrix <- confusionMatrix(table(test.data$Response,decision.tree.prediction))
+confusionMatrix
+
+```
+```{r}
+## KMeans Clustering
+library(cluster)
+sse= c() ## declaring Some of square error variable
+
+for (k in range(1,sqrt(nrow(normalized_data)))){
+   sse[k] = kmeans(normalized_data,centers=k)$tot.withinss
+   
+}
+sse
+## Plot SSE vs Number of Clusters
+
+
+
+```
+
